@@ -1,7 +1,7 @@
-#biopax-validator-issue10
+# biopax-validator-issue10
 
 Embedding BioPAX Validator in another project and enabling Aspectj LTW can be problematic
-(requires a special maven assembly configuration). See BioPAX/validator#10 (issue).
+(requires a special maven assembly configuration). See [BioPAX/validator#10](https://github.com/BioPAX/validator/issues/10) (issue).
 
 This is a quick-fix, follow-up, example "project" to help a user who was trying 
 to run the BioPAX Validator 4.0.0 from own java code
