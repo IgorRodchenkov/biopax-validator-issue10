@@ -4,7 +4,7 @@
 
   <groupId>org.fileGeneration</groupId>
   <artifactId>using-validator-example</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>using-validator-example</name>
@@ -12,18 +12,38 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <spring.version>5.1.2.RELEASE</spring.version>
+    <slf4j.version>1.7.25</slf4j.version>
   </properties>
+
+  <repositories>
+    <repository>
+      <!--latest stable biopax-validator snapshots are there-->
+      <id>ossrh</id>
+      <name>OSSRH Repository</name>
+      <url>https://oss.sonatype.org/content/groups/public/</url>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
       <groupId>org.biopax.validator</groupId>
       <artifactId>biopax-validator</artifactId>
-      <version>4.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.biopax.paxtools</groupId>
-      <artifactId>paxtools-core</artifactId>
-      <version>5.1.0</version>
+      <version>5.0.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.activation</groupId>
+          <artifactId>javax.activation-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.biopax.paxtools</groupId>
@@ -33,13 +53,9 @@
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>4.2.4.RELEASE</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
       <artifactId>spring-instrument</artifactId>
-      <version>4.2.4.RELEASE</version>
+      <version>${spring.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -50,14 +66,14 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.25</version>
+      <version>${slf4j.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <!-- required due to org.obo in biopax-validator uses log4j directly-->
+      <!--due to org.obo in biopax-validator uses log4j impl-->
       <groupId>org.slf4j</groupId>
       <artifactId>log4j-over-slf4j</artifactId>
-      <version>1.7.25</version>
+      <version>${slf4j.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -79,88 +95,51 @@
           <target>8</target>
         </configuration>
       </plugin>
-      <!--<plugin>-->
-        <!--<groupId>org.apache.maven.plugins</groupId>-->
-        <!--<artifactId>maven-shade-plugin</artifactId>-->
-        <!--<version>3.1.0</version>-->
-        <!--<executions>-->
-          <!--<execution>-->
-            <!--<id>make-assembly</id>-->
-            <!--<phase>package</phase>-->
-            <!--<goals>-->
-              <!--<goal>shade</goal>-->
-            <!--</goals>-->
-            <!--<configuration>-->
-              <!--<finalName>example</finalName>-->
-              <!--<transformers>-->
-                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
-                  <!--<mainClass>org.fileGeneration.biopax.Biopax</mainClass>-->
-                <!--</transformer>-->
-                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">-->
-                  <!--<resource>META-INF/spring.handlers</resource>-->
-                <!--</transformer>-->
-                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">-->
-                  <!--<resource>META-INF/spring.schemas</resource>-->
-                <!--</transformer>-->
-              <!--</transformers>-->
-              <!--<filters>-->
-                <!--<filter>-->
-                  <!--<artifact>*:*</artifact>-->
-                  <!--<excludes>-->
-                    <!--<exclude>META-INF/*.SF</exclude>-->
-                    <!--<exclude>META-INF/*.DSA</exclude>-->
-                    <!--<exclude>META-INF/*.RSA</exclude>-->
-                  <!--</excludes>-->
-                <!--</filter>-->
-              <!--</filters>-->
-            <!--</configuration>-->
-          <!--</execution>-->
-        <!--</executions>-->
-      <!--</plugin>-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>org.fileGeneration.biopax.Biopax</mainClass>
-              <addClasspath>true</addClasspath>
-              <classpathPrefix>lib/</classpathPrefix>
-            </manifest>
-          </archive>
-          <finalName>example</finalName>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
+        <artifactId>maven-shade-plugin</artifactId>
         <version>3.1.0</version>
-        <configuration>
-          <finalName>example</finalName>
-          <descriptors>
-            <descriptor>src/main/resources/assembly.xml</descriptor>
-          </descriptors>
-        </configuration>
         <executions>
           <execution>
             <id>make-assembly</id>
             <phase>package</phase>
             <goals>
-              <goal>single</goal>
+              <goal>shade</goal>
             </goals>
+            <configuration>
+              <finalName>example</finalName>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.fileGeneration.biopax.Biopax</mainClass>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/spring.handlers</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/spring.schemas</resource>
+                </transformer>
+              </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <useSystemClassLoader>false</useSystemClassLoader>
+        </configuration>
+      </plugin>
     </plugins>
-    <!--<resources>-->
-      <!--<resource>-->
-        <!--<directory>src/main/resources</directory>-->
-        <!--<filtering>true</filtering>-->
-      <!--</resource>-->
-      <!--<resource>-->
-        <!--<directory>src/test/resources</directory>-->
-        <!--<filtering>true</filtering>-->
-      <!--</resource>-->
-    <!--</resources>-->
   </build>
 </project>

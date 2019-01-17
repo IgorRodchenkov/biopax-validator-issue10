@@ -1,26 +1,31 @@
 # biopax-validator-issue10
 
-Embedding BioPAX Validator in another project and enabling Aspectj LTW can be problematic
-(requires a special maven assembly configuration). See [BioPAX/validator#10](https://github.com/BioPAX/validator/issues/10) (issue).
-
-This is a quick-fix, follow-up, example "project" to help a user who was trying 
+This is an example fix to help a user who was trying 
 to run the BioPAX Validator 4.0.0 from own java code
-and validate all the BioPAX (.owl) files in a data directory.
+to validate all the BioPAX (.owl) files in a data directory.
 
-I just refactored the original pom.xml and Biopax.java source files to make it work,
-(removed path/name specific source code and unused parameters, imports, dependencies) 
-but did not try to polish the app's code and design)
+Embedding BioPAX Validator in another project and enabling Aspectj LTW was problematic
+(required a special maven assembly configuration). 
+See [BioPAX/validator#10](https://github.com/BioPAX/validator/issues/10) (issue).
+For some reason, this app (as well as the validator console app) did not work if a simple 
+configuration for the maven-assembly-plugin (jar-with-dependencies) or maven-shade-plugin 
+were used instead of advanced assembly (see src/main/resources/assembly.xml) and manifest.
 
+I updated the biopax-validator and refactored user's source code to make things work.
+This project uses biopax-validator:5.0.0-SNAPSHOT library and maven-shade-plugin
+(it does not require special zip assembly configuration).
+However, it does not work properly (skips syntax errors) if build with Spring framework version 5
+(load time weaving does not work despite -javaagent option). 
 
 Build and try it (requires java >= 8): 
 
 ```
 mvn clean package
-cd target
-unzip example-distr.zip
-cd example
-java -Xmx8g -javaagent:lib/spring-instrument-4.2.4.RELEASE.jar -Dpaxtools.CollectionProvider=org.biopax.paxtools.trove.TProvider -jar example.jar testdata
+java -Xmx8g -javaagent:${settings.localRepository}/spring-instrument-${spring.version}.jar \
+-Dpaxtools.CollectionProvider=org.biopax.paxtools.trove.TProvider -jar target/example.jar src/test/resources
 ```
 
-For some reason (perhaps a configuration bug) the app does not work if a simple configuration fo the maven-assembly-plugin (jar-with-dependencies) or maven-shade-plugin are used instead of using advanced assembly (see src/main/resources/assembly.xml) and manifest.
-
+if you're running Java 9 and above, also include the following command-line options before -jar:
+```
+--add-opens java.base/java.lang=ALL-UNNAMED
+```
